@@ -247,7 +247,7 @@ func run(opts runOpts) error {
 	} else {
 		jibMaven, err = jibMavenConfigured(appDir)
 		if err != nil {
-			return fmt.Errorf("filed to check if Jib is configured: %s", err)
+			return fmt.Errorf("failed to check if Jib is configured: %s", err)
 		}
 		if jibMaven {
 			fmt.Println(infoPrefix + " Attempting to build this application with Jib Maven plugin...")
