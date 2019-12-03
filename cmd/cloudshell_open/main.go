@@ -290,6 +290,9 @@ func run(opts runOpts) error {
 		}
 	}
 
+	// see if the service already exists
+	// if it does exist, don't overwrite generated env vars
+
 	serviceLabel := highlight(serviceName)
 	fmt.Println(infoPrefix + " FYI, running the following command:")
 	cmdColor.Printf("\tgcloud run deploy %s", parameter(serviceName))

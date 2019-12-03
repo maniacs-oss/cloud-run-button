@@ -87,18 +87,37 @@ func promptDeploymentRegion(ctx context.Context, project string) (string, error)
 	return choice, nil
 }
 
-func serviceURL(project, name, region string) (string, error) {
+
+func describe(project, name, region, format, flatten string) (string, error) {
 	cmd := exec.Command("gcloud", "run", "services", "describe", name,
 		"--project", project,
 		"--platform", "managed",
 		"--region", region,
-		"--format", "value(status.address.url)")
+		"--format", format,
+		"--flatten", flatten)
 
 	b, err := cmd.CombinedOutput()
 	if err != nil {
 		return "", fmt.Errorf("deployment to Cloud Run failed: %+v. output:\n%s", err, string(b))
 	}
 	return strings.TrimSpace(string(b)), nil
+}
+
+func serviceURL(project, name, region string) (string, error) {
+	return describe(project, name, region, "value(status.address.url)", "")
+}
+
+func envVars(project, name, region string) ([]string, error) {
+	// todo(jamesward) investigate a better way to parse
+	flatten := "spec.template.spec.containers[].env[]"
+	format := "csv[no-heading](spec.template.spec.containers.env.name)"
+	lines, err := describe(project, name, region, format, flatten)
+
+	if err != nil {
+		return []string{}, fmt.Errorf("deployment to Cloud Run failed: %+v. output:\n%s", err, string(lines))
+	}
+
+	return strings.Split(lines, string('\n')), nil
 }
 
 // tryFixServiceName attempts replace the service name with a better one to
