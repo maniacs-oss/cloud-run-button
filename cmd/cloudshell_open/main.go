@@ -290,8 +290,16 @@ func run(opts runOpts) error {
 		}
 	}
 
-	// see if the service already exists
-	// if it does exist, don't overwrite generated env vars
+	_, err = describe(project, serviceName, region, "text", "")
+	if err == nil {
+		// service exists
+		existingEnvVars, err := envVars(project, serviceName, region)
+		if err == nil {
+			fmt.Println(existingEnvVars)
+			fmt.Println(envs)
+			// don't generate existing env vars
+		}
+	}
 
 	serviceLabel := highlight(serviceName)
 	fmt.Println(infoPrefix + " FYI, running the following command:")
@@ -308,6 +316,7 @@ func run(opts runOpts) error {
 	cmdColor.Printf("\t  --memory=%s", parameter(defaultRunMemory))
 	cmdColor.Println("\\")
 	cmdColor.Printf("\t  --allow-unauthenticated\n")
+	// todo(jamesward) env vars
 
 	end = logProgress(fmt.Sprintf("Deploying service %s to Cloud Run...", serviceLabel),
 		fmt.Sprintf("Successfully deployed service %s to Cloud Run.", serviceLabel),
