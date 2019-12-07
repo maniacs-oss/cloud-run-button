@@ -22,7 +22,6 @@
         ```
     1. Authenticate gcloud as the service account:
         ```
-        gcloud components update
         export GOOGLE_APPLICATION_CREDENTIALS=PATH_TO_YOUR_SERVICE_ACCOUNT_KEY_FILE
         gcloud auth activate-service-account --key-file=$GOOGLE_APPLICATION_CREDENTIALS
         ```

@@ -45,17 +45,20 @@ For example:
 
 ```json
 {
-  "name": "foo-app",
-  "env": {
-      "BACKGROUND_COLOR": {
-          "description": "specify a css color",
-          "value": "#fefefe",
-          "required": false
-      },
-      "TITLE": {
-          "description": "title for your site"
-      }
-  }
+    "name": "foo-app",
+    "env": {
+        "BACKGROUND_COLOR": {
+            "description": "specify a css color",
+            "value": "#fefefe",
+            "required": false
+        },
+        "TITLE": {
+            "description": "title for your site"
+        },
+        "APP_SECRET": {
+            "generator": "secret"
+        }
+    }
 }
 ```
 
@@ -70,6 +73,7 @@ Reference:
   - `value`: _(optional)_ default value for the variable, should be a string.
   - `required`, _(optional, default: `true`)_ indicates if they user must provide
     a value for this variable.
+  - `generator`, _(optional)_ use a generator for the value, currently only support `secret`
 
 ### Notes
 

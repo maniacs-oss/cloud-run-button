@@ -16,6 +16,7 @@ package main
 
 import (
 	"fmt"
+	"reflect"
 	"testing"
 )
 
@@ -106,13 +107,13 @@ func Test_envVars(t *testing.T) {
 		project string
 		region string
 		service string
-		want []string
+		want map[string]struct{}
 	}{
-		{"crb-test", "us-central1", "cloud-run-hello", []string{"FOO", "BAR"}},
+		{"crb-test", "us-central1", "cloud-run-hello", map[string]struct{}{"FOO": {}, "BAR": {}}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.service, func(t *testing.T) {
-			if got, err := envVars(tt.project, tt.service, tt.region); !StringArrayEquals(got, tt.want) || err != nil {
+			if got, err := envVars(tt.project, tt.service, tt.region); !reflect.DeepEqual(got, tt.want) || err != nil {
 				t.Errorf("envVars(%s, %s, %s) = %v, want %v", tt.project, tt.region, tt.service, got, tt.want)
 			}
 		})

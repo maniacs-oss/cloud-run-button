@@ -107,7 +107,7 @@ func getAppFile(dir string) (appFile, error) {
 	return *af, nil
 }
 
-func promptEnv(list map[string]env) ([]string, error) {
+func promptEnv(list map[string]env, existing map[string]struct{}) ([]string, error) {
 	// TODO(ahmetb): remove these defers and make customizations at the
 	// individual prompt-level once survey lib allows non-global settings.
 
@@ -116,16 +116,21 @@ func promptEnv(list map[string]env) ([]string, error) {
 	// field and prompt the questions as they appear in the app.json file as
 	// opposed to random order we do here.
 	for k, e := range list {
-		var resp string
+		_, isPresent := existing[k]
 
 		if e.Generator == "secret" {
-			b := make([]byte, 64)
-			_, err := rand.Read(b)
-			if err != nil {
-				return nil, fmt.Errorf("failed to generate secret for %s - %v", k, err)
+			if !isPresent {
+				b := make([]byte, 64)
+				_, err := rand.Read(b)
+				if err != nil {
+					return nil, fmt.Errorf("failed to generate secret for %s - %v", k, err)
+				}
+				resp := base64.StdEncoding.EncodeToString(b)
+				out = append(out, k+"="+resp)
 			}
-			resp = base64.StdEncoding.EncodeToString(b)
 		} else {
+			var resp string
+
 			if err := survey.AskOne(&survey.Input{
 				Message: fmt.Sprintf("Value of %s environment variable (%s)",
 					color.CyanString(k),
@@ -137,8 +142,9 @@ func promptEnv(list map[string]env) ([]string, error) {
 			); err != nil {
 				return nil, fmt.Errorf("failed to get a response for environment variable %s", k)
 			}
+			out = append(out, k+"="+resp)
 		}
-		out = append(out, k+"="+resp)
+
 	}
 	return out, nil
 }

@@ -157,10 +157,6 @@ func run(opts runOpts) error {
 	if err != nil {
 		return fmt.Errorf("error attempting to read the app.json from the cloned repository: %+v", err)
 	}
-	envs, err := promptEnv(appFile.Env)
-	if err != nil {
-		return err
-	}
 
 	var projects []string
 
@@ -235,6 +231,18 @@ func run(opts runOpts) error {
 
 	image := fmt.Sprintf("gcr.io/%s/%s", project, serviceName)
 
+	existingEnvVars := map[string]struct{}{}
+	_, err = describe(project, serviceName, region, "text", "")
+	if err == nil {
+		// service exists
+		existingEnvVars, err = envVars(project, serviceName, region)
+	}
+
+	envs, err := promptEnv(appFile.Env, existingEnvVars)
+	if err != nil {
+		return err
+	}
+
 	exists, err := dockerFileExists(appDir)
 	jibMaven := false
 	if err != nil {
@@ -287,17 +295,6 @@ func run(opts runOpts) error {
 		end(err == nil)
 		if err != nil {
 			return fmt.Errorf("failed to push image to %s: %+v", image, err)
-		}
-	}
-
-	_, err = describe(project, serviceName, region, "text", "")
-	if err == nil {
-		// service exists
-		existingEnvVars, err := envVars(project, serviceName, region)
-		if err == nil {
-			fmt.Println(existingEnvVars)
-			fmt.Println(envs)
-			// don't generate existing env vars
 		}
 	}
 

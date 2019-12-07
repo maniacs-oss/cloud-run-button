@@ -40,7 +40,7 @@ func deploy(project, name, image, region string, envs []string) (string, error) 
 		"--region", region,
 		"--memory", defaultRunMemory,
 		"--allow-unauthenticated",
-		"--set-env-vars", strings.Join(envs, ","))
+		"--update-env-vars", strings.Join(envs, ","))
 	if b, err := cmd.CombinedOutput(); err != nil {
 		return "", fmt.Errorf("failed to deploy to Cloud Run: %+v. output:\n%s", err, string(b))
 	}
@@ -107,17 +107,23 @@ func serviceURL(project, name, region string) (string, error) {
 	return describe(project, name, region, "value(status.address.url)", "")
 }
 
-func envVars(project, name, region string) ([]string, error) {
+func envVars(project, name, region string) (map[string]struct{}, error) {
 	// todo(jamesward) investigate a better way to parse
 	flatten := "spec.template.spec.containers[].env[]"
 	format := "csv[no-heading](spec.template.spec.containers.env.name)"
 	lines, err := describe(project, name, region, format, flatten)
 
 	if err != nil {
-		return []string{}, fmt.Errorf("deployment to Cloud Run failed: %+v. output:\n%s", err, string(lines))
+		return map[string]struct{}{}, fmt.Errorf("deployment to Cloud Run failed: %+v. output:\n%s", err, string(lines))
 	}
 
-	return strings.Split(lines, string('\n')), nil
+	existing := map[string]struct{}{}
+
+	for _, k := range strings.Split(lines, string('\n')) {
+		existing[k] = struct{}{}
+	}
+
+	return existing, nil
 }
 
 // tryFixServiceName attempts replace the service name with a better one to
