@@ -44,8 +44,9 @@ type hook struct {
 }
 
 type hooks struct {
-	PreCreate hook `json:"precreate"`
+	PreCreate  hook `json:"precreate"`
 	PostCreate hook `json:"postcreate"`
+	Build      hook `json:"build"`
 }
 
 type appFile struct {
